@@ -19,11 +19,11 @@ class MinimaxSession(Session):
         # self.reset()
 
     def add_query(self, query):
-        user_item = {"sender_type": "USER", "sender_name": self.session_id, "text": query}
+        user_item = {"role": "user", "name":"用户", "content": query}
         self.messages.append(user_item)
 
     def add_reply(self, reply):
-        assistant_item = {"sender_type": "BOT", "sender_name": "MM智能助理", "text": reply}
+        assistant_item = {"role": "assistant", "content": reply}
         self.messages.append(assistant_item)
 
     def discard_exceeding(self, max_tokens, cur_tokens=None):
@@ -38,14 +38,14 @@ class MinimaxSession(Session):
         while cur_tokens > max_tokens:
             if len(self.messages) > 2:
                 self.messages.pop(1)
-            elif len(self.messages) == 2 and self.messages[1]["sender_type"] == "BOT":
+            elif len(self.messages) == 2 and self.messages[1]["role"] == "assistant":
                 self.messages.pop(1)
                 if precise:
                     cur_tokens = self.calc_tokens()
                 else:
                     cur_tokens = cur_tokens - max_tokens
                 break
-            elif len(self.messages) == 2 and self.messages[1]["sender_type"] == "USER":
+            elif len(self.messages) == 2 and self.messages[1]["role"] == "user":
                 logger.warn("user message exceed max_tokens. total_tokens={}".format(cur_tokens))
                 break
             else:
