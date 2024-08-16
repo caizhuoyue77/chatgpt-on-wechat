@@ -11,7 +11,6 @@ from common.log import logger
     ]
 """
 
-
 class MinimaxSession(Session):
     def __init__(self, session_id, system_prompt=None, model="minimax"):
         super().__init__(session_id, system_prompt)
@@ -19,7 +18,7 @@ class MinimaxSession(Session):
         # self.reset()
 
     def add_query(self, query):
-        user_item = {"role": "user", "name":"用户", "content": query}
+        user_item = {"role": "user", "name":"用户", "content": "{} [当前时间]{}".format(query, self.get_time())}
         self.messages.append(user_item)
 
     def add_reply(self, reply):
@@ -59,6 +58,12 @@ class MinimaxSession(Session):
 
     def calc_tokens(self):
         return num_tokens_from_messages(self.messages, self.model)
+    
+    def get_time(self):
+        from datetime import datetime
+        currentDateAndTime = datetime.now()
+        currentTime = currentDateAndTime.strftime("%H:%M:%S")
+        return currentTime
 
 
 def num_tokens_from_messages(messages, model):
