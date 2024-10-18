@@ -2,16 +2,6 @@ from bot.session_manager import Session
 from common.log import logger
 from datetime import datetime
 
-"""
-    e.g.
-    [
-        {"role": "system", "content": "You are a helpful assistant."},
-        {"role": "user", "content": "Who won the world series in 2020?"},
-        {"role": "assistant", "content": "The Los Angeles Dodgers won the World Series in 2020."},
-        {"role": "user", "content": "Where was it played?"}
-    ]
-"""
-
 class MinimaxSession(Session):
     def __init__(self, session_id, system_prompt=None, model="minimax"):
         super().__init__(session_id, system_prompt)
@@ -19,8 +9,6 @@ class MinimaxSession(Session):
         # self.reset()
 
     def add_query(self, query):
-        # user_item = {"role": "user", "name":"用户", "content": "{} [供你参考的信息] [当前时间]{} [天气预报]{}".format(query, self.get_current_time(),self.get_weather_forecast())}
-        # user_item = {"role": "user", "name":"用户", "content": "{} [供你参考的信息] [当前时间]{}".format(query, self.get_current_time())}
         user_item = {"role": "user", "name":"用户", "content": "{}".format(query)}
         self.messages.append(user_item)
 
