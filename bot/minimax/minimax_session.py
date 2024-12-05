@@ -1,12 +1,37 @@
 from bot.session_manager import Session
 from common.log import logger
 from datetime import datetime
+import threading
+import time
 
 class MinimaxSession(Session):
     def __init__(self, session_id, system_prompt=None, model="minimax"):
         super().__init__(session_id, system_prompt)
         self.model = model
         # self.reset()
+        self._start_query_thread()
+        
+    def _check_and_add_query(self):
+        while True:
+            # 获取当前时间
+            current_time = datetime.now()
+            current_minute = current_time.minute
+
+            # 检查当前分钟数是否能被2整除
+            if current_minute % 2 == 0:
+                self.add_query("能不能夸我一下")
+                print(f"Added query at {current_time.strftime('%H:%M:%S')}: 能不能夸我一下")
+
+            # 每60秒检查一次
+            time.sleep(10)
+            
+    def _start_query_thread(self):
+        # 启动一个线程来执行检查功能
+        thread = threading.Thread(target=self._check_and_add_query)
+        logger.info("添加了线程，一直判断当前分钟数")
+        thread.daemon = True  # 设置为守护线程，主线程退出时，子线程也会退出
+        thread.start()
+
 
     def add_query(self, query):
         user_item = {"role": "user", "name":"用户", "content": "{}".format(query)}

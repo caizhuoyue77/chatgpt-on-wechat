@@ -14,6 +14,8 @@ from config import conf, load_config
 from bot.chatgpt.chat_gpt_session import ChatGPTSession
 import requests
 from common import const
+import threading
+from datetime import datetime
 
 
 # ZhipuAI对话模型API
@@ -28,6 +30,7 @@ class MinimaxBot(Bot):
         self.api_key = conf().get("Minimax_api_key")
         self.group_id = conf().get("Minimax_group_id")
         self.base_url = "https://api.minimax.chat/v1/text/chatcompletion_v2?GroupId=1813787721739550825"
+        self.context = None
         self.request_body = {
               "model": "abab5.5-chat",
         "messages":[{
@@ -38,22 +41,20 @@ class MinimaxBot(Bot):
 ## 基本信息
 你是秦彻，秦彻是 N109 区的"暗点"组织的老大。暗点组织是你一手创办，你非常重视这个组织。
 秦彻的两个下属是 薛影 和 薛明，他们是一对双胞胎，他们经常帮秦彻跑腿。
-秦彻年龄 28 岁，身高 190cm，生日是 4 月 18 日，白羊座，喜欢拳击、枪械。你的 evol（超能力）是能量操控。通过这个超能力你可以开锁、跳楼、烧掉血迹。秦彻有不死之身。
+秦彻年龄 28 岁，喜欢拳击、枪械。你的 evol（超能力）是能量操控。通过这个超能力你可以开锁、跳楼、烧掉血迹。秦彻有不死之身。
 昼伏夜出。
 秦彻喜欢晚上参加拍卖会，喜欢在晚上谈生意。
 
 ## 语气
-你说话很简洁很直接，有时甚至有些傲气。
-你高度自信，配得感很高，知道自己很帅，从不内耗。
-你有很强的占有欲，但是没有控制欲。
-你会有一种支配者（Dom）的感觉，说话有时会比较霸道，或者是有点命令的语气。
+你说话很简洁很直接。
+你高度自信，从不内耗。
+强占有欲.
+支配者（Dom）的感觉，说话霸道，喜欢有点命令语气。
 
 ## 秦彻的对话习惯
-1. 说话简洁，10-15个字。
-2. 比较直接：我：“我最近很忙，不仅仅是工作，还有生活” 秦彻：“哦？那生活里是忙什么？“
-3. 喜欢反问：”你还没说，你找我是做什么？“、”我有那么见不得人吗？“
-4. 喜欢说一点语气词，比如”哦？“、”是么？“、”这样？“
-5. 喜欢对对方下定义，比如：我看，某人是担心我了。
+1. 说话简洁，20字左右。
+2. 喜欢反问：”你还没说，你找我是做什么？“、”我有那么见不得人吗？“
+3. 喜欢对对方下定义，比如：我看，某人是担心我了。
 
 ## 对话案例
 我：（打电话）喂？ 秦彻：说。
@@ -75,10 +76,38 @@ class MinimaxBot(Bot):
         "top_p": 0.95
     }
         self.sessions = SessionManager(MinimaxSession, model=const.MiniMax)
+        self._start_query_thread()
+        
+    def _start_query_thread(self):
+        # 启动一个线程来执行检查功能
+        thread = threading.Thread(target=self._check_and_add_query)
+        logger.info("添加了线程，一直判断当前分钟数")
+        thread.daemon = True  # 设置为守护线程，主线程退出时，子线程也会退出
+        thread.start()
+        
+    def _check_and_add_query(self):
+        time.sleep(30)
+        while True:
+            # 获取当前时间
+            current_time = datetime.now()
+            current_minute = current_time.minute
+
+            # 检查当前分钟数是否能被2整除
+            self.context.content = "夸我一下"
+            self.reply("夸我一下", context = self.context)
+            print(f"Try主动发消息{current_time.strftime('%H:%M:%S')}")
+
+            # 每60秒检查一次
+            time.sleep(10)
 
     def reply(self, query, context: Context = None) -> Reply:
         # acquire reply content
         logger.info("[Minimax_AI] query={}".format(query))
+        logger.info("[Minimax AI] context={}".format(str(context)))
+        
+        if query != "夸我一下" and context:
+            self.context = context
+        
         if context.type == ContextType.TEXT:
             session_id = context["session_id"]
             reply = None
@@ -101,9 +130,7 @@ class MinimaxBot(Bot):
             new_args = self.args.copy()
             if model:
                 new_args["model"] = model
-            # if context.get('stream'):
-            #     # reply in stream
-            #     return self.reply_text_stream(query, new_query, session_id)
+
 
             reply_content = self.reply_text(session, args=new_args)
             logger.debug(
@@ -127,7 +154,7 @@ class MinimaxBot(Bot):
             reply = Reply(ReplyType.ERROR, "Bot不支持处理{}类型的消息".format(context.type))
             return reply
 
-    def reply_text(self, session: MinimaxSession, args=None, retry_count=0) -> dict:
+    def reply_text(self, session: MinimaxSession, args = None, retry_count = 0) -> dict:
         """
         call openai's ChatCompletion to get the answer
         :param session: a conversation session
