@@ -40,11 +40,12 @@ DEMO视频：https://cdn.link-ai.tech/doc/cow_demo.mp4
 
 **企业服务和产品咨询** 可联系产品顾问：
 
-<img width="160" src="https://img-1317903499.cos.ap-guangzhou.myqcloud.com/docs/github-product-consult.png">
+<img width="160" src="https://cdn.link-ai.tech/consultant-s.jpg">
 
 <br>
 
 # 🏷 更新日志
+>**2024.10.31：** [1.7.3版本](https://github.com/zhayujie/chatgpt-on-wechat/releases/tag/1.7.3) 程序稳定性提升、数据库功能、Claude模型优化、linkai插件优化、离线通知
 
 >**2024.09.26：** [1.7.2版本](https://github.com/zhayujie/chatgpt-on-wechat/releases/tag/1.7.2)  和 [1.7.1版本](https://github.com/zhayujie/chatgpt-on-wechat/releases/tag/1.7.1) 文心，讯飞等模型优化、o1 模型、快速安装和管理脚本
 
@@ -143,6 +144,7 @@ pip3 install -r requirements-optional.txt
 {
   "model": "gpt-3.5-turbo",                                   # 模型名称, 支持 gpt-3.5-turbo, gpt-4, gpt-4-turbo, wenxin, xunfei, glm-4, claude-3-haiku, moonshot
   "open_ai_api_key": "YOUR API KEY",                          # 如果使用openAI模型则填入上面创建的 OpenAI API KEY
+  "open_ai_api_base": "https://api.openai.com/v1",            # OpenAI接口代理地址
   "proxy": "",                                                # 代理客户端的ip和端口，国内环境开启代理的需要填写该项，如 "127.0.0.1:7890"
   "single_chat_prefix": ["bot", "@bot"],                      # 私聊时文本需要包含该前缀才能触发机器人回复
   "single_chat_reply_prefix": "[bot] ",                       # 私聊时自动回复的前缀，用于区分真人
